@@ -10,7 +10,6 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\EventDispatcher\GenericEvent;
 use Symfony\Component\Security\Core\User\UserInterface;
 
-
 /**
  * Job manager
  *
@@ -24,7 +23,6 @@ class JobManager
      * @var SmartManagerRegistry
      */
     protected $doctrine;
-
 
     /**
      * Constructor

@@ -3,7 +3,6 @@
 namespace Pim\Bundle\ImportExportBundle\Controller;
 
 use Akeneo\Bundle\BatchBundle\Connector\ConnectorRegistry;
-use Akeneo\Bundle\BatchBundle\Entity\JobExecution;
 use Akeneo\Bundle\BatchBundle\Entity\JobInstance;
 use Akeneo\Bundle\BatchBundle\Item\UploadedFileAwareInterface;
 use Doctrine\Common\Persistence\ManagerRegistry;
@@ -21,7 +20,6 @@ use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Symfony\Component\Process\PhpExecutableFinder;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Security\Core\SecurityContextInterface;
 use Symfony\Component\Translation\TranslatorInterface;
