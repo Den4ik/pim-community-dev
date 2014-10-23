@@ -59,6 +59,9 @@ class JobProfileController extends AbstractDoctrineController
     /** @var JobManager */
     protected $jobManager;
 
+    /** @var File */
+    protected $file;
+
     /**
      * Constructor
      *
@@ -301,18 +304,31 @@ class JobProfileController extends AbstractDoctrineController
      */
     protected function validate(JobInstance $jobInstance)
     {
-        $violations       = $this->getValidator()->validate($jobInstance, ['Default', 'Execution']);
+        $violations = $this->getValidator()->validate($jobInstance, ['Default', 'Execution']);
+
+        return ($violations->count() === 0);
+    }
+
+    /**
+     * Validate if the job is correct or not
+     *
+     * @param JobInstance $jobInstance
+     *
+     * @return boolean
+     */
+    protected function validateUploadTest(JobInstance $jobInstance)
+    {
         $uploadViolations = $this->getValidator()->validate($jobInstance, ['Default', 'UploadExecution']);
 
         $uploadMode = $uploadViolations->count() === 0 ? $this->processUploadForm($jobInstance) : false;
 
-        $fileErrorCount = 0;
-
-        if ($this->fileError instanceof ConstraintViolationListInterface) {
-            $fileErrorCount = $this->fileError->count();
+        if ($uploadMode && $this->configureUploadJob($jobInstance, $this->file)) {
+            $error = false;
+        } else {
+            $error = true;
         }
 
-        return ($uploadMode === true || $violations->count() === 0 && $fileErrorCount === 0);
+        return (!$error);
     }
 
     /**
@@ -324,7 +340,21 @@ class JobProfileController extends AbstractDoctrineController
      */
     public function launchUploadedAction($id)
     {
-        return $this->launchJob(true, $id);
+        try {
+            $jobInstance = $this->getJobInstance($id);
+        } catch (NotFoundHttpException $e) {
+            $this->addFlash('error', $e->getMessage());
+
+            return $this->redirectToIndexView();
+        }
+
+        if ($this->validateUploadTest($jobInstance)) {
+
+            $jobExecution = $this->launchJob(true, $jobInstance);
+            return $this->redirectToReportView($jobExecution->getId());
+        }
+
+        return $this->redirectToShowView($id);
     }
 
     /**
@@ -336,7 +366,20 @@ class JobProfileController extends AbstractDoctrineController
      */
     public function launchAction($id)
     {
-        return $this->launchJob(false, $id);
+        try {
+            $jobInstance = $this->getJobInstance($id);
+        } catch (NotFoundHttpException $e) {
+            $this->addFlash('error', $e->getMessage());
+            return $this->redirectToIndexView();
+        }
+
+        if ($this->validate($jobInstance)) {
+
+            $jobExecution = $this->launchJob(false, $jobInstance);
+            return $this->redirectToReportView($jobExecution->getId());
+        }
+
+        return $this->redirectToShowView($id);
     }
 
     /**
@@ -355,9 +398,9 @@ class JobProfileController extends AbstractDoctrineController
             if ($form->isValid()) {
                 $data = $form->get('file')->getData();
                 if ($file = $data->getFile()) {
-                    $file = $file->move(sys_get_temp_dir(), $file->getClientOriginalName());
+                    $this->file = $file->move(sys_get_temp_dir(), $file->getClientOriginalName());
 
-                    return $this->configureUploadJob($jobInstance, $file);
+                    return true;
                 }
 
                 $this->addFlash('error', 'You must select a file to upload');
@@ -370,24 +413,15 @@ class JobProfileController extends AbstractDoctrineController
     /**
      * Allow to validate and run the job
      *
-     * @param $isUpload
-     * @param $id
+     * @param  boolean     $isUpload
+     * @param  JobInstance $jobInstance
      *
-     * @return \Symfony\Component\HttpFoundation\RedirectResponse
+     * @return JobInstance
      */
-    protected function launchJob($isUpload, $id)
+    protected function launchJob($isUpload, $jobInstance)
     {
-        try {
-            $jobInstance = $this->getJobInstance($id);
-        } catch (NotFoundHttpException $e) {
-            $this->addFlash('error', $e->getMessage());
-
-            return $this->redirectToIndexView();
-        }
-
         $this->eventDispatcher->dispatch(JobProfileEvents::PRE_EXECUTE, new GenericEvent($jobInstance));
 
-        if ($this->validate($jobInstance)) {
             $jobExecution = $this->jobManager->launchJob(
                 $jobInstance,
                 $this->rootDir,
@@ -400,10 +434,7 @@ class JobProfileController extends AbstractDoctrineController
 
             $this->addFlash('success', sprintf('The %s is running.', $this->getJobType()));
 
-            return $this->redirectToReportView($jobExecution->getId());
-        }
-
-        return $this->redirectToShowView($jobInstance->getId());
+            return $jobExecution;
     }
 
     /**

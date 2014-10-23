@@ -51,9 +51,7 @@ class JobManager
     public function launchJob(JobInstance $jobInstance, $rootDir, $environment, $uploadMode, UserInterface $user)
     {
         $jobExecution = new JobExecution();
-        $jobExecution
-            ->setJobInstance($jobInstance)
-            ->setUser($user->getUsername());
+        $jobExecution->setJobInstance($jobInstance)->setUser($user->getUsername());
         $manager = $this->doctrine->getManagerForClass(get_class($jobExecution));
         $manager->persist($jobExecution);
         $manager->flush($jobExecution);
