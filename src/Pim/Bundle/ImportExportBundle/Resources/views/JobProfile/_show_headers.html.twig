@@ -16,7 +16,7 @@
         {{ elements.link('Upload and '~action, null, {icon: 'upload-alt', class: 'btn-primary', attr: { 'data-form-toggle': 'pim_importexport_import_upload'}}) }}
     {% endif %}
     {% if violations|length == 0 %}
-        {{ elements.link(action~' now', launchRoute, {icon: 'cogs', class: 'btn-primary'}) }}
+        {{ elements.link(action~' now', launchUploadRoute, {icon: 'cogs', class: 'btn-primary'}) }}
     {% endif %}
 {% endset %}
 
@@ -25,7 +25,7 @@
 {% if uploadForm is defined and uploadForm is not empty and uploadAllowed and uploadViolations|length == 0 %}
     {{ form_start(uploadForm, {
         'id': 'pim_importexport_import_upload',
-        'action': launchRoute,
+        'action': launchUploadRoute,
         'attr': {
             'class': 'form-upload hide'
         }

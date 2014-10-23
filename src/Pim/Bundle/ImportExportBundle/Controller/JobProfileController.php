@@ -293,51 +293,50 @@ class JobProfileController extends AbstractDoctrineController
     }
 
     /**
-     * Launch a job
+     * Validate if the job is correct or not
      *
-     * @param Request $request
-     * @param integer $id
+     * @param JobInstance $jobInstance
      *
-     * @return \Symfony\Component\HttpFoundation\RedirectResponse
+     * @return boolean
      */
-    public function launchAction(Request $request, $id)
+    protected function validate(JobInstance $jobInstance)
     {
-        try {
-            $jobInstance = $this->getJobInstance($id);
-        } catch (NotFoundHttpException $e) {
-            $this->addFlash('error', $e->getMessage());
-
-            return $this->redirectToIndexView();
-        }
-
-        $this->eventDispatcher->dispatch(JobProfileEvents::PRE_EXECUTE, new GenericEvent($jobInstance));
-
         $violations       = $this->getValidator()->validate($jobInstance, ['Default', 'Execution']);
         $uploadViolations = $this->getValidator()->validate($jobInstance, ['Default', 'UploadExecution']);
 
         $uploadMode = $uploadViolations->count() === 0 ? $this->processUploadForm($jobInstance) : false;
+
         $fileErrorCount = 0;
 
         if ($this->fileError instanceof ConstraintViolationListInterface) {
             $fileErrorCount = $this->fileError->count();
         }
-        if ($uploadMode === true || $violations->count() === 0 && $fileErrorCount === 0) {
-            $jobExecution = $this->jobManager->launchJob(
-                $jobInstance,
-                $this->rootDir,
-                $this->environment,
-                $uploadMode,
-                $this->getUser()
-            );
 
-            $this->eventDispatcher->dispatch(JobProfileEvents::POST_EXECUTE, new GenericEvent($jobInstance));
+        return ($uploadMode === true || $violations->count() === 0 && $fileErrorCount === 0);
+    }
 
-            $this->addFlash('success', sprintf('The %s is running.', $this->getJobType()));
+    /**
+     * Launch a job from uploaded file
+     *
+     * @param integer $id
+     *
+     * @return \Symfony\Component\HttpFoundation\RedirectResponse
+     */
+    public function launchUploadedAction($id)
+    {
+        return $this->launchJob(true, $id);
+    }
 
-            return $this->redirectToReportView($jobExecution->getId());
-        }
-
-        return $this->redirectToShowView($jobInstance->getId());
+    /**
+     * Launch a job
+     *
+     * @param integer $id
+     *
+     * @return \Symfony\Component\HttpFoundation\RedirectResponse
+     */
+    public function launchAction($id)
+    {
+        return $this->launchJob(false, $id);
     }
 
     /**
@@ -366,6 +365,45 @@ class JobProfileController extends AbstractDoctrineController
         }
 
         return false;
+    }
+
+    /**
+     * Allow to validate and run the job
+     *
+     * @param $isUpload
+     * @param $id
+     *
+     * @return \Symfony\Component\HttpFoundation\RedirectResponse
+     */
+    protected function launchJob($isUpload, $id)
+    {
+        try {
+            $jobInstance = $this->getJobInstance($id);
+        } catch (NotFoundHttpException $e) {
+            $this->addFlash('error', $e->getMessage());
+
+            return $this->redirectToIndexView();
+        }
+
+        $this->eventDispatcher->dispatch(JobProfileEvents::PRE_EXECUTE, new GenericEvent($jobInstance));
+
+        if ($this->validate($jobInstance)) {
+            $jobExecution = $this->jobManager->launchJob(
+                $jobInstance,
+                $this->rootDir,
+                $this->environment,
+                $isUpload,
+                $this->getUser()
+            );
+
+            $this->eventDispatcher->dispatch(JobProfileEvents::POST_EXECUTE, new GenericEvent($jobInstance));
+
+            $this->addFlash('success', sprintf('The %s is running.', $this->getJobType()));
+
+            return $this->redirectToReportView($jobExecution->getId());
+        }
+
+        return $this->redirectToShowView($jobInstance->getId());
     }
 
     /**

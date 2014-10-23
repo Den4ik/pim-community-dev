@@ -3,11 +3,12 @@
 namespace Pim\Bundle\ImportExportBundle\Manager;
 
 use Akeneo\Bundle\BatchBundle\Entity\JobExecution;
-use Akeneo\Bundle\BatchBundle\Job\JobInterface;
+use Akeneo\Bundle\BatchBundle\Entity\JobInstance;
 use Pim\Bundle\CatalogBundle\Doctrine\SmartManagerRegistry;
 use Pim\Bundle\ImportExportBundle\Event\JobProfileEvents;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\EventDispatcher\GenericEvent;
+use Symfony\Component\Process\PhpExecutableFinder;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 /**
@@ -39,7 +40,7 @@ class JobManager
     }
 
     /**
-     * @param JobInterface  $jobInstance
+     * @param JobInstance  $jobInstance
      * @param string        $rootDir
      * @param string        $environment
      * @param boolean       $uploadMode
@@ -47,7 +48,7 @@ class JobManager
      *
      * @return JobExecution
      */
-    public function launchJob(JobInterface $jobInstance, $rootDir, $environment, $uploadMode, UserInterface $user)
+    public function launchJob(JobInstance $jobInstance, $rootDir, $environment, $uploadMode, UserInterface $user)
     {
         $jobExecution = new JobExecution();
         $jobExecution
