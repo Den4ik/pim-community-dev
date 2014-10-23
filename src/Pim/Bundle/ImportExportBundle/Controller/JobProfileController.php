@@ -421,7 +421,7 @@ class JobProfileController extends AbstractDoctrineController
      *
      * @return JobInstance
      */
-    protected function launchJob($isUpload, $jobInstance)
+    protected function launchJob($isUpload, JobInstance $jobInstance)
     {
         $this->eventDispatcher->dispatch(JobProfileEvents::PRE_EXECUTE, new GenericEvent($jobInstance));
 
