@@ -23,20 +23,20 @@ class JobManager
     /**
      * @var SmartManagerRegistry
      */
-    protected $doctrine;
+    protected $managerRegistry;
 
     /**
      * Constructor
      *
      * @param EventDispatcherInterface $eventDispatcher
-     * @param SmartManagerRegistry     $doctrine
+     * @param SmartManagerRegistry     $managerRegistry
      */
     public function __construct(
         EventDispatcherInterface $eventDispatcher,
-        SmartManagerRegistry $doctrine
+        SmartManagerRegistry $managerRegistry
     ) {
         $this->eventDispatcher = $eventDispatcher;
-        $this->doctrine        = $doctrine;
+        $this->doctrine        = $managerRegistry;
     }
 
     /**
@@ -90,7 +90,7 @@ class JobManager
     {
         $jobExecution = new JobExecution();
         $jobExecution->setJobInstance($jobInstance)->setUser($user->getUsername());
-        $manager = $this->doctrine->getManagerForClass(get_class($jobExecution));
+        $manager = $this->$managerRegistry->getManagerForClass(get_class($jobExecution));
         $manager->persist($jobExecution);
         $manager->flush($jobExecution);
 
