@@ -29,7 +29,7 @@ class JobManager
      * Constructor
      *
      * @param EventDispatcherInterface $eventDispatcher
-     * @param SmartManagerRegistry $doctrine
+     * @param SmartManagerRegistry     $doctrine
      */
     public function __construct(
         EventDispatcherInterface $eventDispatcher,
@@ -40,7 +40,7 @@ class JobManager
     }
 
     /**
-     * @param JobInstance  $jobInstance
+     * @param JobInstance   $jobInstance
      * @param string        $rootDir
      * @param string        $environment
      * @param boolean       $uploadMode
@@ -80,7 +80,7 @@ class JobManager
     /**
      * Instantiate a new job execution
      *
-     * @param JobInstance $jobInstance
+     * @param JobInstance   $jobInstance
      * @param UserInterface $user
      *
      * @return JobExecution

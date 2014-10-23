@@ -351,6 +351,7 @@ class JobProfileController extends AbstractDoctrineController
         if ($this->validateUpload($jobInstance)) {
 
             $jobExecution = $this->launchJob(true, $jobInstance);
+
             return $this->redirectToReportView($jobExecution->getId());
         }
 
@@ -370,12 +371,14 @@ class JobProfileController extends AbstractDoctrineController
             $jobInstance = $this->getJobInstance($id);
         } catch (NotFoundHttpException $e) {
             $this->addFlash('error', $e->getMessage());
+
             return $this->redirectToIndexView();
         }
 
         if ($this->validate($jobInstance)) {
 
             $jobExecution = $this->launchJob(false, $jobInstance);
+
             return $this->redirectToReportView($jobExecution->getId());
         }
 
@@ -413,8 +416,8 @@ class JobProfileController extends AbstractDoctrineController
     /**
      * Allow to validate and run the job
      *
-     * @param  boolean     $isUpload
-     * @param  JobInstance $jobInstance
+     * @param boolean     $isUpload
+     * @param JobInstance $jobInstance
      *
      * @return JobInstance
      */
