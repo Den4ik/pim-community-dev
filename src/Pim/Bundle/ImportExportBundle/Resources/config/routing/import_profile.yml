@@ -40,7 +40,7 @@ pim_importexport_import_profile_launch:
         id: \d+
 
 pim_importexport_import_profile_launch_upload:
-    path: /{id}/launch
+    path: /{id}/launchUpload
     defaults: { _controller: pim_import_export.controller.import_profile:launchUploadedAction }
     requirements:
         id: \d+
