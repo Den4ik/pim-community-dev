@@ -45,6 +45,8 @@ pim.grid.ajax_choice_filter.label_empty: is empty
 Available Columns:                 Available Columns
 Displayed Columns:                 Displayed Columns
 datagrid_view.columns.min_message: You must select at least one datagrid column to display
+All groups:                        All groups
+Search:                            Search
 
 # Quick export
 pim.grid.mass_action.quick_export.title: Quick Export
