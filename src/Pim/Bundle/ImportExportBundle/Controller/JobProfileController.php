@@ -310,13 +310,13 @@ class JobProfileController extends AbstractDoctrineController
     }
 
     /**
-     * Validate if the job is correct or not
+     * Validate if the job is correct from an uploaded file
      *
      * @param JobInstance $jobInstance
      *
      * @return boolean
      */
-    protected function validateUploadTest(JobInstance $jobInstance)
+    protected function validateUpload(JobInstance $jobInstance)
     {
         $uploadViolations = $this->getValidator()->validate($jobInstance, ['Default', 'UploadExecution']);
 
@@ -348,7 +348,7 @@ class JobProfileController extends AbstractDoctrineController
             return $this->redirectToIndexView();
         }
 
-        if ($this->validateUploadTest($jobInstance)) {
+        if ($this->validateUpload($jobInstance)) {
 
             $jobExecution = $this->launchJob(true, $jobInstance);
             return $this->redirectToReportView($jobExecution->getId());

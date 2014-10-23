@@ -50,14 +50,10 @@ class JobManager
      */
     public function launchJob(JobInstance $jobInstance, $rootDir, $environment, $uploadMode, UserInterface $user)
     {
-        $jobExecution = new JobExecution();
-        $jobExecution->setJobInstance($jobInstance)->setUser($user->getUsername());
-        $manager = $this->doctrine->getManagerForClass(get_class($jobExecution));
-        $manager->persist($jobExecution);
-        $manager->flush($jobExecution);
+        $jobExecution = $this->createJob($jobInstance, $user);
         $instanceCode = $jobExecution->getJobInstance()->getCode();
-        $executionId = $jobExecution->getId();
-        $pathFinder = new PhpExecutableFinder();
+        $executionId  = $jobExecution->getId();
+        $pathFinder  = new PhpExecutableFinder();
 
         $cmd = sprintf(
             '%s %s/console akeneo:batch:job --env=%s --email="%s" %s %s %s >> %s/logs/batch_execute.log 2>&1',
@@ -77,6 +73,26 @@ class JobManager
         exec($cmd . ' &');
 
         $this->eventDispatcher->dispatch(JobProfileEvents::POST_EXECUTE, new GenericEvent($jobInstance));
+
+        return $jobExecution;
+    }
+
+    /**
+     * Instantiate a new job execution
+     *
+     * @param JobInstance $jobInstance
+     * @param UserInterface $user
+     *
+     * @return JobExecution
+     * @throws \Exception
+     */
+    protected function createJob(JobInstance $jobInstance, UserInterface $user)
+    {
+        $jobExecution = new JobExecution();
+        $jobExecution->setJobInstance($jobInstance)->setUser($user->getUsername());
+        $manager = $this->doctrine->getManagerForClass(get_class($jobExecution));
+        $manager->persist($jobExecution);
+        $manager->flush($jobExecution);
 
         return $jobExecution;
     }
